@@ -1,0 +1,23 @@
+---
+# ------------------------------------------------
+# Enable Projects
+# ------------------------------------------------
+deploy_jenkins: False
+
+
+# ------------------------------------------------
+# Amazon Web Services Virtual Private Cloud Section
+# ------------------------------------------------
+
+# e.g. development or production or testing
+ec2_tag_environment: jcallen-ai-testing
+
+# ------------------------------------------------
+# Ansible File Paths
+# ------------------------------------------------
+# Location on the filesystem where ssh keys and credential files
+# will be stored.
+# ------------------------------------------------
+ansible_files_path: /home/jcallen
+keypairs_path: "{{ ansible_files_path }}/ssh_keys/"
+credentials_path: "{{ ansible_files_path }}/credentials/"

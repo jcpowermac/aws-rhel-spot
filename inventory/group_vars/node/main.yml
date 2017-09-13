@@ -1,0 +1,66 @@
+---
+# ------------------------------------------------
+# Amazon Web Services Specific Variables
+# These variables only need to be changed if deploying to AWS
+# ------------------------------------------------
+ami_name: 'CentOS Linux 7 x86_64 HVM*'
+ami_owner: 679593333241
+
+# ------------------------------------------------
+# EC2 Instance Type
+# ------------------------------------------------
+# See https://aws.amazon.com/ec2/instance-types/
+# ------------------------------------------------
+ec2_instance_type: p2.xlarge
+# ------------------------------------------------
+# EC2 Volume Details, size in GB
+# ------------------------------------------------
+ec2_volumes:
+  - device_name: /dev/sda1
+    volume_size: "{{ root_volume_size }}"
+    volume_type: gp2
+
+spot_price: 0.30
+spot_type: 'one-time'
+
+# ------------------------------------------------
+# VARIABLES BELOW SHOULD _NOT_ NEED TO BE MODIFIED
+# ------------------------------------------------
+
+# ------------------------------------------------
+# exact_count
+# ------------------------------------------------
+# If multiple Jira instances are to be created this should
+# be handled by Ansible inventory not with `exact_count`.
+# Specifically add an entry under the [jira] group in inventory/hosts.ini
+# and add a corresponding inventory/host_var/jira-#.yml file.
+# ------------------------------------------------
+exact_count: 1
+
+# ------------------------------------------------
+# Security Group Variables
+# ------------------------------------------------
+# See http://docs.ansible.com/ansible/ec2_module.html for more details
+# ------------------------------------------------
+sg_description: "Ingress and Egress Firewall Rules"
+sg_name: sg_jcallen_node
+aws_sg_rules:
+  # Instance SSH access
+  - proto: tcp
+    from_port: 22
+    to_port: 22
+    cidr_ip: 0.0.0.0/0
+
+aws_sg_egress_rules:
+  - proto: all
+    cidr_ip: 0.0.0.0/0
+
+# ------------------------------------------------
+# Ansible Connection
+# ------------------------------------------------
+# These values will replace the local connection
+# at the end of the aws_instance role.
+# ------------------------------------------------
+aws_ansible_ssh_user: "centos"
+aws_ansible_connection: "ssh"
+aws_ansible_ssh_port: 22

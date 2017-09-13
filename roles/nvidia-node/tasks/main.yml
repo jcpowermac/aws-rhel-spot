@@ -1,0 +1,69 @@
+---
+
+- name: Update all packages
+  yum:
+    pkg: '*'
+    state: latest
+
+- name: Install EPEL
+  yum:
+    pkg: epel-release
+    state: present
+
+- name: Add CUDA repo
+  yum_repository:
+    name: cuda
+    description: cuda
+    baseurl: http://developer.download.nvidia.com/compute/cuda/repos/rhel7/x86_64/
+    gpgcheck: no
+
+
+# TODO: determine a method of getting the latest release for nvidia-docker
+- name: Install Prereq
+  yum:
+    pkg: '{{ item }}'
+    state: present
+  with_items:
+    - cuda
+    - docker-latest
+    - https://github.com/NVIDIA/nvidia-docker/releases/download/v1.0.1/nvidia-docker-1.0.1-1.x86_64.rpm
+
+- name: Configure Overlay Driver
+  template:
+    src: docker-latest-storage-setup.j2
+    dest: /etc/sysconfig/docker-latest-storage-setup
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Enable Docker
+  systemd:
+    name: '{{ item }}'
+    enabled: yes
+    masked: no
+  with_items:
+    - docker-latest
+    - nvidia-docker
+
+- name: Reboot
+  shell: >
+    sleep 2 &&
+    /sbin/shutdown -r now "Ansible - System Upgrades"
+  async: 1
+  poll: 0
+  ignore_errors: True
+
+- pause:
+    seconds: 30
+
+- name: Wait for host to boot
+  become: false
+  local_action: wait_for
+  args:
+    host: "{{ ansible_host }}"
+    port: "{{ ansible_port }}"
+    state: started
+    delay: 30
+    connect_timeout: 15
+    timeout: 300
+

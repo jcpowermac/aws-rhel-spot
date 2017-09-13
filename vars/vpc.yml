@@ -1,0 +1,39 @@
+---
+
+# ------------------------------------------------
+# vpc_subnet_id
+# ------------------------------------------------
+# Using the registered variable vpc in localhost's hostvars
+# select the attribute of subnets the dictionary that the
+# resource_tags.Tier equals 'App'.  With map() we are selecting
+# only the id attribute, creating it as a list and using the first
+# entry in the list.
+#
+# NOTE: Potential issue in the future if there were multiple
+# application subnets.
+# ------------------------------------------------
+
+ec2_region: "{{ hostvars[vpchv]['ec2_region'] }}"
+vpc_id: "{{ hostvars[vpchv]['vpc']['vpc_id'] }}"
+
+# NOTE: Potential issue in the future if there were multiple
+# application subnets.
+vpc_subnet_id: |
+  {{ hostvars[vpchv]['vpc']['subnets'] | 
+  selectattr('resource_tags.Tier', 'equalto', tier ) | 
+  map(attribute='id') |
+  list() | 
+  first()
+  }}
+
+app_subnets: |
+    {{ hostvars[vpchv]['vpc']['subnets'] |
+    selectattr('resource_tags.Tier', 'match', 'app' ) |
+    map(attribute='cidr') |
+    list() }}
+
+rds_subnets: | 
+  {{ hostvars[vpchv]['vpc']['subnets'] | 
+  selectattr('resource_tags.Tier', 'equalto', tier ) | 
+  map(attribute='id') | 
+  list() }}

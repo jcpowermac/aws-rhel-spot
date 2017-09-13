@@ -1,0 +1,58 @@
+---
+# ------------------------------------------------
+# site.yml
+# ------------------------------------------------
+# This is an example playbook to install the DevCloud components
+# to AWS.  If modification is needed I recommend copying
+# this playbook, making modifications to existing plays
+# rather than starting from scratch.
+# ------------------------------------------------
+
+# ------------------------------------------------
+# Create VPC
+# ------------------------------------------------
+# The VPC needs to created first to deploy our
+# application instances into.  We use the registered
+# variable `vpc` which is available in the vpc hostvars
+# for the following plays.
+# ------------------------------------------------
+- name: AWS VPC
+  hosts: vpc
+  gather_facts: False
+  tasks:
+    - name: Create and Configure VPC
+      ec2_vpc:
+        aws_access_key: "{{ ec2_access_key }}"
+        aws_secret_key: "{{ ec2_secret_key }}"
+        region: "{{ ec2_region }}"
+        cidr_block: "{{ cidr_block }}"
+        resource_tags: "{{ vpc_resource_tags }}"
+        subnets: "{{ vpc_subnets }}"
+        internet_gateway: True
+        route_tables: "{{ route_tables }}"
+        wait: yes
+        state: present
+      register: vpc
+
+# ------------------------------------------------
+# EC2 instance and Application Deployment
+# ------------------------------------------------
+# Each application play will execute the appropriate role to
+# install and configure the application.  In the case
+# of deploying to AWS the first role included wil be
+# `aws_instance`.  The instance details are defined
+# by the group_vars and host_vars.
+# ------------------------------------------------
+
+- name: ai-node
+  hosts: node
+  gather_facts: True
+  vars:
+    tier: east-2a
+    vpchv: vpc-east-1
+  vars_files:
+    - vars/vpc.yml
+  roles:
+    - { role: aws_instance }
+    - { role: nvidia-node }
+

@@ -1,0 +1,76 @@
+---
+# ------------------------------------------------
+# Amazon Web Services Virtual Private Cloud Section
+# ------------------------------------------------
+
+# Which region are you deploying to?
+ec2_region: us-west-2
+
+# ------------------------------------------------
+# VPC Resource Tags
+# ------------------------------------------------
+# vpc_resource_tags equates to the ec2_vpc module parameter of `resource_tags` in the playbook.
+# Name: Is the name of the VPC
+# Environment: is determined from the above `ec2_tag_environment` variable
+# NOTE: Additional tags can be added.
+# ------------------------------------------------
+vpc_resource_tags:
+  Name: jc-west-DevCloud
+  Environment: "{{ ec2_tag_environment }}"
+
+# ------------------------------------------------
+# VPC CIDR Block
+# ------------------------------------------------
+# See http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Subnets.html
+# for more information regarding CIDR blocks and VPC.
+cidr_block: "172.27.0.0/16"
+# ------------------------------------------------
+
+# ------------------------------------------------
+# VPC Subnets
+# ------------------------------------------------
+# IMPORTANT: The database and application tier subnets are determined by the `Tier` tag.  Each 
+# tier _must_have_ the appropriate `App` or `DB` tag.
+# Modify or add another entry to the array of dictionaries.
+# See http://docs.ansible.com/ansible/ec2_vpc_module.html for additional examples.
+# vpc_subnets equates to the ec2_vpc module parameter of `subnets` in the playbook.
+# ------------------------------------------------
+
+vpc_subnets:
+  - cidr: "172.27.1.0/24"
+    az: "us-west-2a"
+    resource_tags:
+      Name: "app_public_primary_subnet"
+      Tier: "app_primary"
+      Environment: "{{ ec2_tag_environment }}"
+  - cidr: "172.27.2.0/24"
+    az: "us-west-2c"
+    resource_tags:
+      Name: "app_public_secondary_subnet"
+      Tier: "app_secondary"
+      Environment: "{{ ec2_tag_environment }}"
+  - cidr: "172.27.3.0/27"
+    az: "us-west-2a"
+    resource_tags:
+      Name: "rds_private_primary_subnet"
+      Tier: "DB"
+      Environment: "{{ ec2_tag_environment }}"
+  - cidr: "172.27.3.32/27"
+    az: "us-west-2c"
+    resource_tags:
+      Name: "rds_private_secondary_subnet"
+      Tier: "DB"
+      Environment: "{{ ec2_tag_environment }}"
+
+
+# ------------------------------------------------
+# VARIABLES BELOW SHOULD _NOT_ NEED TO BE MODIFIED
+# ------------------------------------------------
+
+subnets: "{{ vpc_subnets | map(attribute='cidr') | list() }}"
+
+route_tables:
+  - subnets: "{{ subnets }}"
+    routes:
+      - dest: "0.0.0.0/0"
+        gw: "igw"

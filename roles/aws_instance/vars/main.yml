@@ -1,0 +1,4 @@
+---
+# vars file for aws_instance
+
+keyname: "{{ ansible_user_id }}-{{ ec2_tag_name }}-{{ ec2_tag_environment }}"
