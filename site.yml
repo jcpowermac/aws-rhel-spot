@@ -2,11 +2,6 @@
 # ------------------------------------------------
 # site.yml
 # ------------------------------------------------
-# This is an example playbook to install the DevCloud components
-# to AWS.  If modification is needed I recommend copying
-# this playbook, making modifications to existing plays
-# rather than starting from scratch.
-# ------------------------------------------------
 
 # ------------------------------------------------
 # Create VPC
